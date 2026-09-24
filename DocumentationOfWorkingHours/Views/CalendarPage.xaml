@@ -1,0 +1,85 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="DocumentationOfWorkingHours.Views.CalendarPage"
+             Title="Working Hours">
+
+    <ContentPage.Resources>
+        <!-- DayTextColor removed; use ShellTitleColor resource directly in TextColor bindings -->
+        <Style x:Key="DayBorder" TargetType="Border">
+            <Setter Property="Padding" Value="6" />
+            <!--<Setter Property="CornerRadius" Value="6" />-->
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="Stroke" Value="Transparent" />
+            <Setter Property="StrokeThickness" Value="0" />
+        </Style>
+        <Style x:Key="PlaceholderBorder" TargetType="Border" BasedOn="{StaticResource DayBorder}">
+            <Setter Property="Opacity" Value="0.2" />
+        </Style>
+    </ContentPage.Resources>
+
+    <VerticalStackLayout Spacing="12" Padding="12">
+        <Grid ColumnDefinitions="Auto,*,Auto" VerticalOptions="Center">
+            <Button Text="◀" Command="{Binding PrevMonthCommand}" />
+            <Label Grid.Column="1" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" Text="{Binding MonthTitle}" />
+            <Button Grid.Column="2" Text="▶" Command="{Binding NextMonthCommand}" />
+        </Grid>
+
+        <!-- Wochentage -->
+        <Grid ColumnDefinitions="*,*,*,*,*,*,*">
+            <Label Text="MO" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Text="DI" Grid.Column="1" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Text="MI" Grid.Column="2" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Text="DO" Grid.Column="3" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Text="FR" Grid.Column="4" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Text="SA" Grid.Column="5" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Text="SO" Grid.Column="6" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" />
+        </Grid>
+
+        <!-- Tage als Grid (7 Spalten) -->
+        <CollectionView ItemsSource="{Binding Days}" SelectionMode="Single" SelectedItem="{Binding SelectedDay, Mode=TwoWay}">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="7" />
+            </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border Style="{StaticResource DayBorder}" BackgroundColor="Transparent">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Day number centered -->
+                            <Label Grid.Row="0" Text="{Binding DayNumber}" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" FontSize="16" />
+
+                            <!-- Note at bottom-left -->
+                            <Label Grid.Row="1" Text="{Binding Note}" FontSize="11" VerticalOptions="End" HorizontalOptions="Start" LineBreakMode="TailTruncation" />
+                        </Grid>
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding IsPlaceholder}" Value="True">
+                                <Setter Property="Style" Value="{StaticResource PlaceholderBorder}" />
+                                <Setter Property="IsEnabled" Value="False" />
+                                <Setter Property="InputTransparent" Value="True" />
+                            </DataTrigger>
+                            <!-- Thin white border for current day -->
+                            <DataTrigger TargetType="Border" Binding="{Binding IsToday}" Value="True">
+                                <Setter Property="Stroke" Value="White" />
+                                <Setter Property="StrokeThickness" Value="1" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Eingabebereich am unteren Rand zum Bearbeiten einer Notiz -->
+        <Grid Padding="6">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Entry Grid.Row="0" Text="{Binding SelectedDay.Note}" Placeholder="Stunden angeben" HorizontalOptions="FillAndExpand" IsVisible="{Binding IsEditing}" IsEnabled="{Binding IsEditing}" Keyboard="Numeric" TextChanged="OnHoursEntryTextChanged" />
+            <Button Grid.Row="0" Text="Save" Command="{Binding SaveCommand}" HorizontalOptions="End" IsVisible="{Binding IsEditing}" IsEnabled="{Binding IsEditing}" />
+        </Grid>
+
+    </VerticalStackLayout>
+</ContentPage>

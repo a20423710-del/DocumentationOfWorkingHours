@@ -35,8 +35,8 @@
             <Label Text="SO" Grid.Column="6" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" />
         </Grid>
 
-        <!-- Calendar and weekly sums side-by-side -->
-        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+        <!-- Calendar -->
+        <Grid ColumnDefinitions="*" ColumnSpacing="8">
             <!-- Tage als Grid (7 Spalten) -->
             <CollectionView Grid.Column="0" ItemsSource="{Binding Days}" SelectionMode="Single" SelectedItem="{Binding SelectedDay, Mode=TwoWay}">
                 <CollectionView.ItemsLayout>
@@ -77,24 +77,12 @@
                 </CollectionView.ItemTemplate>
             </CollectionView>
 
-            <!-- Weekly sums display -->
-            <CollectionView Grid.Column="1" ItemsSource="{Binding WeekSums}" WidthRequest="120" BackgroundColor="Transparent">
-                <CollectionView.ItemsLayout>
-                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
-                </CollectionView.ItemsLayout>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Frame Padding="6" CornerRadius="6" BackgroundColor="#333" HasShadow="False" WidthRequest="120">
-                            <Label Text="{Binding .}" TextColor="White" HorizontalOptions="Center" />
-                        </Frame>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+            <!-- Weekly sums removed -->
         </Grid>
 
         <!-- Eingabebereich am unteren Rand zum Bearbeiten einer Notiz (zentriert) -->
         <HorizontalStackLayout Padding="6" Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
-            <Entry Text="{Binding SelectedDay.Note}" Placeholder="Stunden angeben" WidthRequest="200" HorizontalOptions="Center" IsVisible="{Binding IsEditing}" IsEnabled="{Binding IsEditing}" Keyboard="Numeric" TextChanged="OnHoursEntryTextChanged" />
+            <Entry Text="{Binding SelectedDay.Note}" Placeholder="Stunden angeben" WidthRequest="200" HorizontalOptions="Center" IsVisible="{Binding IsEditing}" IsEnabled="{Binding IsEditing}" Keyboard="Numeric" TextChanged="OnHoursEntryTextChanged" Completed="OnEntryCompleted" ReturnType="Done" />
             <Button Text="Save" Command="{Binding SaveCommand}" HorizontalOptions="Center" IsVisible="{Binding IsEditing}" IsEnabled="{Binding IsEditing}" />
         </HorizontalStackLayout>
 

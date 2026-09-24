@@ -15,6 +15,15 @@ namespace DocumentationOfWorkingHours.Views
             BindingContext = new CalendarPageViewModel();
         }
 
+        void OnEntryCompleted(object sender, EventArgs e)
+        {
+            if (BindingContext is CalendarPageViewModel vm && vm.SaveCommand != null)
+            {
+                if (vm.SaveCommand.CanExecute(null))
+                    vm.SaveCommand.Execute(null);
+            }
+        }
+
         void OnHoursEntryTextChanged(object sender, TextChangedEventArgs e)
         {
             if (sender is Entry entry)

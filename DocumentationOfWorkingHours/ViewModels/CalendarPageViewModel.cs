@@ -26,7 +26,6 @@ namespace DocumentationOfWorkingHours.ViewModels
     public class CalendarPageViewModel : BindableObject
     {
         public ObservableCollection<DayDisplay> Days { get; } = new();
-        public ObservableCollection<string> WeekSums { get; } = new();
 
         DayDisplay? _selectedDay;
         public DayDisplay? SelectedDay
@@ -158,8 +157,7 @@ namespace DocumentationOfWorkingHours.ViewModels
             while (Days.Count % 7 != 0)
                 Days.Add(new DayDisplay { DayNumber = null });
 
-            // Update weekly sums after days are prepared
-            UpdateWeekSums();
+            // Weekly sums removed
 
             return Task.CompletedTask;
         }
@@ -223,33 +221,11 @@ namespace DocumentationOfWorkingHours.ViewModels
 
                 // Nach dem Speichern Eingabemodus beenden, Auswahl beibehalten
                 IsEditing = false;
-                // Recompute weekly sums after save
-                UpdateWeekSums();
+                // Weekly sums removed
             }
             catch { }
         }
 
-        void UpdateWeekSums()
-        {
-            WeekSums.Clear();
-            if (Days.Count == 0) return;
-
-            var weekCount = Days.Count / 7;
-            for (int w = 0; w < weekCount; w++)
-            {
-                var start = w * 7;
-                var chunk = Days.Skip(start).Take(7);
-                double sum = 0.0;
-                foreach (var d in chunk)
-                {
-                    if (d?.Note == null) continue;
-                    if (double.TryParse(d.Note, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.CurrentCulture, out var v))
-                        sum += v;
-                }
-                // format with up to 2 decimals
-                var text = string.Format(System.Globalization.CultureInfo.CurrentCulture, "{0:0.##} /40h", sum);
-                WeekSums.Add(text);
-            }
-        }
+        // Weekly sums feature removed
     }
 }

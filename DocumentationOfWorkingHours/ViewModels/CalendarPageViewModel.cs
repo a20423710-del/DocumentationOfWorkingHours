@@ -26,6 +26,7 @@ namespace DocumentationOfWorkingHours.ViewModels
     public class CalendarPageViewModel : BindableObject
     {
         public ObservableCollection<DayDisplay> Days { get; } = new();
+        public ObservableCollection<string> WeekSums { get; } = new();
 
         DayDisplay? _selectedDay;
         public DayDisplay? SelectedDay
@@ -76,6 +77,7 @@ namespace DocumentationOfWorkingHours.ViewModels
         public ICommand PrevMonthCommand { get; }
         public ICommand NextMonthCommand { get; }
         public ICommand SaveCommand { get; }
+        public ICommand SelectDayCommand { get; }
 
         public CalendarPageViewModel()
         {
@@ -83,7 +85,20 @@ namespace DocumentationOfWorkingHours.ViewModels
             PrevMonthCommand = new Command(async () => await ChangeMonthAsync(-1));
             NextMonthCommand = new Command(async () => await ChangeMonthAsync(1));
             SaveCommand = new Command(async () => await SaveNoteAsync());
+            SelectDayCommand = new Command<DayDisplay>(d => OnSelectDay(d));
             _ = LoadMonthAsync(_current);
+        }
+
+        void OnSelectDay(DayDisplay? d)
+        {
+            if (d == null) return;
+            // If the same day is already selected, clear selection first so SelectedItem binding changes
+            if (SelectedDay != null && SelectedDay.Date?.Date == d.Date?.Date)
+            {
+                SelectedDay = null;
+            }
+            // Now set the selection to trigger the setter logic and open editor
+            SelectedDay = d;
         }
 
         private async Task ChangeMonthAsync(int offset)
@@ -142,6 +157,9 @@ namespace DocumentationOfWorkingHours.ViewModels
             // Fill trailing placeholders to complete the last week
             while (Days.Count % 7 != 0)
                 Days.Add(new DayDisplay { DayNumber = null });
+
+            // Update weekly sums after days are prepared
+            UpdateWeekSums();
 
             return Task.CompletedTask;
         }
@@ -205,8 +223,33 @@ namespace DocumentationOfWorkingHours.ViewModels
 
                 // Nach dem Speichern Eingabemodus beenden, Auswahl beibehalten
                 IsEditing = false;
+                // Recompute weekly sums after save
+                UpdateWeekSums();
             }
             catch { }
+        }
+
+        void UpdateWeekSums()
+        {
+            WeekSums.Clear();
+            if (Days.Count == 0) return;
+
+            var weekCount = Days.Count / 7;
+            for (int w = 0; w < weekCount; w++)
+            {
+                var start = w * 7;
+                var chunk = Days.Skip(start).Take(7);
+                double sum = 0.0;
+                foreach (var d in chunk)
+                {
+                    if (d?.Note == null) continue;
+                    if (double.TryParse(d.Note, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.CurrentCulture, out var v))
+                        sum += v;
+                }
+                // format with up to 2 decimals
+                var text = string.Format(System.Globalization.CultureInfo.CurrentCulture, "{0:0.##} /40h", sum);
+                WeekSums.Add(text);
+            }
         }
     }
 }

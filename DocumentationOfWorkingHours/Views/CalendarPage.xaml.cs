@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using Microsoft.Maui.Controls;
 using DocumentationOfWorkingHours.ViewModels;
 
@@ -6,6 +7,8 @@ namespace DocumentationOfWorkingHours.Views
 {
     public partial class CalendarPage : ContentPage
     {
+        const double MinValue = 1.0;
+        const double MaxValue = 10.0;
         public CalendarPage()
         {
             InitializeComponent();
@@ -20,7 +23,7 @@ namespace DocumentationOfWorkingHours.Views
                 var sb = new System.Text.StringBuilder();
 
                 // Use current culture decimal separator as preferred symbol
-                var cultureSep = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator[0];
+                var cultureSep = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator[0];
                 bool seenDecimal = false;
 
                 foreach (var ch in text)
@@ -44,6 +47,19 @@ namespace DocumentationOfWorkingHours.Views
                 }
 
                 var filtered = sb.ToString();
+
+                // If parseable, enforce min/max bounds
+                if (double.TryParse(filtered, NumberStyles.Float, CultureInfo.CurrentCulture, out var val))
+                {
+                    if (val < MinValue) val = MinValue;
+                    else if (val > MaxValue) val = MaxValue;
+                    var clamped = val.ToString(CultureInfo.CurrentCulture);
+                    if (clamped != filtered)
+                    {
+                        filtered = clamped;
+                    }
+                }
+
                 if (filtered != text)
                 {
                     // attempt to preserve cursor position

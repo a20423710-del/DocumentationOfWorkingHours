@@ -9,7 +9,6 @@
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <!-- Shell title color used by CalendarPage DayTextColor -->
             <Color x:Key="ShellTitleColor">#512BD4</Color>
         </ResourceDictionary>
     </Application.Resources>

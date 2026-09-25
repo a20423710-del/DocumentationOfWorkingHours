@@ -55,7 +55,7 @@
                                 <Label Grid.Row="0" Text="{Binding DayNumber}" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" FontSize="16" />
 
                                 <!-- Note at bottom-left -->
-                                <Label Grid.Row="1" Text="{Binding Note}" FontSize="11" VerticalOptions="End" HorizontalOptions="Start" LineBreakMode="TailTruncation" />
+                                <Label Grid.Row="1" Text="{Binding DisplayNote}" FontSize="11" VerticalOptions="End" HorizontalOptions="Start" LineBreakMode="TailTruncation" />
                             </Grid>
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding Source={x:Reference page}, Path=BindingContext.SelectDayCommand}" CommandParameter="{Binding .}" />
@@ -98,7 +98,7 @@
 
             <!-- Hours controls moved to the right column -->
             <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center" HorizontalOptions="End">
-                <Label Text="{Binding SelectedHours, StringFormat='{0:N1}h'}" VerticalOptions="Center" IsVisible="{Binding IsEditing}" HorizontalOptions="Center" />
+                <Label Text="{Binding SelectedHoursDisplay}" VerticalOptions="Center" IsVisible="{Binding IsEditing}" HorizontalOptions="Center" />
 
                 <Button Text="-" WidthRequest="44" HeightRequest="44" Clicked="OnMinusClicked" IsVisible="{Binding IsEditing}" />
                 <Button Text="+" WidthRequest="44" HeightRequest="44" Clicked="OnPlusClicked" IsVisible="{Binding IsEditing}" />

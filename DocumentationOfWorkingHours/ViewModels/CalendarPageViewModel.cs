@@ -20,10 +20,24 @@ namespace DocumentationOfWorkingHours.ViewModels
         bool _isToday;
 
         public int? DayNumber { get => _dayNumber; set { _dayNumber = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsPlaceholder)); } }
-        public string? Note { get => _note; set { _note = value; OnPropertyChanged(); } }
+        public string? Note { get => _note; set { _note = value; OnPropertyChanged(); OnPropertyChanged(nameof(DisplayNote)); } }
         public bool IsPlaceholder => DayNumber == null;
         public bool IsToday { get => _isToday; set { _isToday = value; OnPropertyChanged(); } }
         public DateTime? Date { get => _date; set { _date = value; OnPropertyChanged(); } }
+
+        // Return an empty string when note is null/empty or numeric zero
+        public string DisplayNote
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Note)) return string.Empty;
+                if (double.TryParse(Note, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.CurrentCulture, out var v))
+                {
+                    if (Math.Abs(v) < 0.0001) return string.Empty;
+                }
+                return Note ?? string.Empty;
+            }
+        }
     }
 
     public class CalendarPageViewModel : BindableObject
@@ -314,12 +328,15 @@ namespace DocumentationOfWorkingHours.ViewModels
                 {
                     SelectedDay.Note = s;
                     OnPropertyChanged(nameof(SelectedHours));
+                    OnPropertyChanged(nameof(SelectedHoursDisplay));
                     OnPropertyChanged(nameof(SelectedDay));
                     // update persistent storage if desired; also update sums immediately
                     RecalcWeekSums();
                 }
             }
         }
+
+        public string SelectedHoursDisplay => Math.Abs(SelectedHours) < 0.0001 ? string.Empty : SelectedHours.ToString("N1", CultureInfo.CurrentCulture) + "h";
     }
 
     public class WeekSummary

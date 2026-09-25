@@ -2,6 +2,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
@@ -72,6 +73,14 @@ namespace DocumentationOfWorkingHours.ViewModels
 
         private DateTime _current;
         public string MonthTitle => _current.ToString("Y", CultureInfo.CurrentCulture);
+
+        // Text for week sums shown in the UI (e.g. "W1: 20h / W2: 40h")
+        string _weekSumsText = string.Empty;
+        public string WeekSumsText
+        {
+            get => _weekSumsText;
+            set { _weekSumsText = value; OnPropertyChanged(); }
+        }
 
         public ICommand PrevMonthCommand { get; }
         public ICommand NextMonthCommand { get; }
@@ -157,7 +166,8 @@ namespace DocumentationOfWorkingHours.ViewModels
             while (Days.Count % 7 != 0)
                 Days.Add(new DayDisplay { DayNumber = null });
 
-            // Weekly sums removed
+            // Recalculate week sums for the loaded month
+            RecalcWeekSums();
 
             return Task.CompletedTask;
         }
@@ -221,11 +231,48 @@ namespace DocumentationOfWorkingHours.ViewModels
 
                 // Nach dem Speichern Eingabemodus beenden, Auswahl beibehalten
                 IsEditing = false;
-                // Weekly sums removed
+                // Recalculate week sums after saving note
+                RecalcWeekSums();
             }
             catch { }
         }
 
-        // Weekly sums feature removed
+        void RecalcWeekSums()
+        {
+            try
+            {
+                var cal = CultureInfo.CurrentCulture.Calendar;
+                var rule = CalendarWeekRule.FirstFourDayWeek;
+                var firstDay = DayOfWeek.Monday;
+
+                var groups = Days
+                    .Where(d => d.Date != null)
+                    .GroupBy(d => cal.GetWeekOfYear(d.Date!.Value, rule, firstDay))
+                    .Select(g => new
+                    {
+                        Week = g.Key,
+                        Sum = g.Sum(x =>
+                        {
+                            if (string.IsNullOrWhiteSpace(x.Note)) return 0.0;
+                            // try parse note as a numeric hours value
+                            if (double.TryParse(x.Note, System.Globalization.NumberStyles.Float, CultureInfo.CurrentCulture, out var v))
+                                return v;
+                            // fallback: try to extract leading number token
+                            var firstToken = x.Note.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+                            if (firstToken != null && double.TryParse(firstToken, System.Globalization.NumberStyles.Float, CultureInfo.CurrentCulture, out var v2))
+                                return v2;
+                            return 0.0;
+                        })
+                    })
+                    .OrderBy(g => g.Week)
+                    .ToList();
+
+                WeekSumsText = string.Join(" / ", groups.Select(g => $"W{g.Week}: {g.Sum}h"));
+            }
+            catch
+            {
+                WeekSumsText = string.Empty;
+            }
+        }
     }
 }

@@ -59,6 +59,9 @@ namespace DocumentationOfWorkingHours.ViewModels
                 _selectedDay = value;
                 OnPropertyChanged();
 
+                // Notify SelectedHours binding when selection changes
+                OnPropertyChanged(nameof(SelectedHours));
+
                 // Wenn vorher keine Auswahl war oder ein anderer Tag gewählt wurde -> Editing an, sonst aus
                 IsEditing = wasNull || !sameDate;
             }
@@ -272,6 +275,30 @@ namespace DocumentationOfWorkingHours.ViewModels
             catch
             {
                 WeekSumsText = string.Empty;
+            }
+        }
+
+        // Helper property for binding to a Stepper control. Reads/writes SelectedDay.Note as numeric hours.
+        public double SelectedHours
+        {
+            get
+            {
+                if (SelectedDay?.Note != null && double.TryParse(SelectedDay.Note, System.Globalization.NumberStyles.Float, CultureInfo.CurrentCulture, out var v))
+                    return v;
+                return 0.0;
+            }
+            set
+            {
+                if (SelectedDay == null) return;
+                var s = value.ToString(CultureInfo.CurrentCulture);
+                if (SelectedDay.Note != s)
+                {
+                    SelectedDay.Note = s;
+                    OnPropertyChanged(nameof(SelectedHours));
+                    OnPropertyChanged(nameof(SelectedDay));
+                    // update persistent storage if desired; also update sums immediately
+                    RecalcWeekSums();
+                }
             }
         }
     }

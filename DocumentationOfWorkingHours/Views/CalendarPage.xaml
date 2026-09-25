@@ -82,20 +82,25 @@
 
         <!-- Eingabebereich und Wochen-Summen in einer Zeile -->
         <Grid Padding="6" ColumnDefinitions="*,Auto" VerticalOptions="Center">
-            <HorizontalStackLayout Grid.Column="0" Spacing="8" HorizontalOptions="Start" VerticalOptions="Center">
-                <Entry Text="{Binding SelectedDay.Note}" Placeholder="Stunden angeben" WidthRequest="200" HorizontalOptions="Start" IsVisible="{Binding IsEditing}" IsEnabled="{Binding IsEditing}" Keyboard="Numeric" TextChanged="OnHoursEntryTextChanged" Completed="OnEntryCompleted" ReturnType="Done" />
-                <Button Text="Save" Command="{Binding SaveCommand}" HorizontalOptions="Start" IsVisible="{Binding IsEditing}" IsEnabled="{Binding IsEditing}" />
-            </HorizontalStackLayout>
-
-            <!-- Week sums label in the same row, right aligned -->
-            <Label Grid.Column="1" Text="{Binding WeekSumsText}"
+            <!-- Week sums moved to the left column -->
+            <Label Grid.Column="0" Text="{Binding WeekSumsText}"
                    BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
                    TextColor="{StaticResource PrimaryDark}"
                    Padding="8"
-                   HorizontalOptions="End"
+                   HorizontalOptions="Start"
                    VerticalOptions="Center"
                    Margin="12,0,12,0"
                    LineBreakMode="NoWrap" />
+
+            <!-- Hours controls moved to the right column -->
+            <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center" HorizontalOptions="End">
+                <Label Text="{Binding SelectedHours, StringFormat='{0:N1}h'}" VerticalOptions="Center" IsVisible="{Binding IsEditing}" HorizontalOptions="Center" />
+
+                <Button Text="-" WidthRequest="44" HeightRequest="44" Clicked="OnMinusClicked" IsVisible="{Binding IsEditing}" />
+                <Button Text="+" WidthRequest="44" HeightRequest="44" Clicked="OnPlusClicked" IsVisible="{Binding IsEditing}" />
+
+                <Button Text="Save" Command="{Binding SaveCommand}" IsVisible="{Binding IsEditing}" IsEnabled="{Binding IsEditing}" />
+            </HorizontalStackLayout>
         </Grid>
 
     </VerticalStackLayout>

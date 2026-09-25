@@ -15,6 +15,26 @@ namespace DocumentationOfWorkingHours.Views
             BindingContext = new CalendarPageViewModel();
         }
 
+        void OnMinusClicked(object sender, EventArgs e)
+        {
+            if (BindingContext is CalendarPageViewModel vm)
+            {
+                var val = vm.SelectedHours;
+                val = Math.Max(0, val - 0.5);
+                vm.SelectedHours = val;
+            }
+        }
+
+        void OnPlusClicked(object sender, EventArgs e)
+        {
+            if (BindingContext is CalendarPageViewModel vm)
+            {
+                var val = vm.SelectedHours;
+                val = Math.Min(10, val + 0.5);
+                vm.SelectedHours = val;
+            }
+        }
+
         void OnEntryCompleted(object sender, EventArgs e)
         {
             if (BindingContext is CalendarPageViewModel vm && vm.SaveCommand != null)

@@ -82,15 +82,19 @@
 
         <!-- Eingabebereich und Wochen-Summen in einer Zeile -->
         <Grid Padding="6" ColumnDefinitions="*,Auto" VerticalOptions="Center">
-            <!-- Week sums moved to the left column -->
-            <Label Grid.Column="0" Text="{Binding WeekSumsText}"
-                   BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
-                   TextColor="{StaticResource PrimaryDark}"
-                   Padding="8"
-                   HorizontalOptions="Start"
-                   VerticalOptions="Center"
-                   Margin="12,0,12,0"
-                   LineBreakMode="NoWrap" />
+            <!-- Week sums as individual items so we can color weeks >= 40h -->
+            <StackLayout Grid.Column="0" Orientation="Horizontal" Spacing="8" HorizontalOptions="Start" VerticalOptions="Center" BindableLayout.ItemsSource="{Binding WeekSummaries}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate>
+                        <Label Text="{Binding Label}"
+                               Padding="8"
+                               Margin="4,0"
+                               BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+                               TextColor="{Binding TextColor}"
+                               VerticalOptions="Center" />
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </StackLayout>
 
             <!-- Hours controls moved to the right column -->
             <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center" HorizontalOptions="End">

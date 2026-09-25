@@ -3,6 +3,8 @@ using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using Microsoft.Maui.Graphics;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
@@ -27,6 +29,7 @@ namespace DocumentationOfWorkingHours.ViewModels
     public class CalendarPageViewModel : BindableObject
     {
         public ObservableCollection<DayDisplay> Days { get; } = new();
+        public ObservableCollection<WeekSummary> WeekSummaries { get; } = new();
 
         DayDisplay? _selectedDay;
         public DayDisplay? SelectedDay
@@ -156,6 +159,8 @@ namespace DocumentationOfWorkingHours.ViewModels
                                         goto found;
                                     }
                                 }
+
+
                             }
                         }
                     }
@@ -269,8 +274,22 @@ namespace DocumentationOfWorkingHours.ViewModels
                     })
                     .OrderBy(g => g.Week)
                     .ToList();
-
                 WeekSumsText = string.Join(" / ", groups.Select(g => $"W{g.Week}: {g.Sum}h"));
+
+                // Populate WeekSummaries collection so UI can color weeks >= 40h
+                WeekSummaries.Clear();
+                foreach (var g in groups)
+                {
+                    var ws = new WeekSummary
+                    {
+                        WeekNumber = g.Week,
+                        SumHours = g.Sum,
+                        Label = $"W{g.Week}: {g.Sum}h",
+                        TextColor = g.Sum >= 40.0 ? Colors.Green : (Color)Colors.Gray
+                    };
+                    WeekSummaries.Add(ws);
+                }
+                OnPropertyChanged(nameof(WeekSummaries));
             }
             catch
             {
@@ -302,4 +321,13 @@ namespace DocumentationOfWorkingHours.ViewModels
             }
         }
     }
+
+    public class WeekSummary
+    {
+        public int WeekNumber { get; set; }
+        public double SumHours { get; set; }
+        public string Label { get; set; } = string.Empty;
+        public Color TextColor { get; set; } = Colors.Gray;
+    }
+
 }

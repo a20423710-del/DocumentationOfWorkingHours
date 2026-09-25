@@ -63,18 +63,30 @@ namespace DocumentationOfWorkingHours.Services
             PropertyNameCaseInsensitive = true
         };
 
-        // Default filename used for calendar storage. Change here to alter the filename.
-        private const string DefaultFileName = "calendar.json";
+        // Default filename used for calendar storage. Uses build configuration suffix so Debug/Release use different files.
+        private static string DefaultFileName
+        {
+            get
+            {
+#if DEBUG
+                return "calendar.debug.json";
+#else
+                return "calendar.json";
+#endif
+            }
+        }
 
-        public static string GetDefaultPath(string fileName = DefaultFileName)
+        public static string GetDefaultPath(string? fileName = null)
         {
 #if MAUI
-            return Path.Combine(FileSystem.AppDataDirectory, fileName);
+            return Path.Combine(FileSystem.AppDataDirectory, fileName ?? DefaultFileName);
 #else
+#pragma warning disable CA2000 // Dispose objects before losing scope - simple path creation
             var folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             var appFolder = Path.Combine(folder, "DocumentationOfWorkingHours");
             if (!Directory.Exists(appFolder)) Directory.CreateDirectory(appFolder);
-            return Path.Combine(appFolder, fileName);
+            return Path.Combine(appFolder, fileName ?? DefaultFileName);
+#pragma warning restore CA2000
 #endif
         }
 

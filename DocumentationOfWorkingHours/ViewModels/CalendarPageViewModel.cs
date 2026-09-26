@@ -294,12 +294,16 @@ namespace DocumentationOfWorkingHours.ViewModels
                 WeekSummaries.Clear();
                 foreach (var g in groups)
                 {
+                    var progress = Math.Min(g.Sum / 40.0, 1.0);
+                    var isFull = progress >= 1.0;
                     var ws = new WeekSummary
                     {
                         WeekNumber = g.Week,
                         SumHours = g.Sum,
                         Label = $"W{g.Week}: {g.Sum}h",
-                        TextColor = g.Sum >= 40.0 ? Colors.Green : (Color)Colors.Gray
+                        TextColor = Colors.Gray,
+                        Progress = progress,
+                        ProgressColor = isFull ? Colors.Green : Color.FromArgb("#ac99ea")
                     };
                     WeekSummaries.Add(ws);
                 }
@@ -345,6 +349,9 @@ namespace DocumentationOfWorkingHours.ViewModels
         public double SumHours { get; set; }
         public string Label { get; set; } = string.Empty;
         public Color TextColor { get; set; } = Colors.Gray;
+        // Progress 0..1 where 1 means 40h or more
+        public double Progress { get; set; }
+        public Color ProgressColor { get; set; } = Colors.Green;
     }
 
 }

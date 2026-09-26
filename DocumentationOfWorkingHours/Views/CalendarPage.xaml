@@ -86,12 +86,15 @@
             <StackLayout Grid.Column="0" Orientation="Horizontal" Spacing="8" HorizontalOptions="Start" VerticalOptions="Center" BindableLayout.ItemsSource="{Binding WeekSummaries}">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate>
-                        <Label Text="{Binding Label}"
-                               Padding="8"
-                               Margin="4,0"
-                               BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
-                               TextColor="{Binding TextColor}"
-                               VerticalOptions="Center" />
+                        <StackLayout Orientation="Vertical" Spacing="2" Margin="0">
+                            <Label Text="{Binding Label}"
+                                   Padding="4,2"
+                                   Margin="4,0"
+                                   BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+                                   TextColor="{Binding TextColor}"
+                                   VerticalOptions="Center" />
+                            <ProgressBar Progress="{Binding Progress}" HeightRequest="6" ProgressColor="{Binding ProgressColor}" BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" />
+                        </StackLayout>
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
             </StackLayout>

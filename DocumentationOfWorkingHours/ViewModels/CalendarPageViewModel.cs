@@ -292,23 +292,43 @@ namespace DocumentationOfWorkingHours.ViewModels
                 WeekSumsText = string.Join(" / ", groups.Select(g => $"W{g.Week}: {g.Sum.ToString("N1", CultureInfo.CurrentCulture)}h"));
 
                 // Populate WeekSummaries collection so UI can color weeks >= 40h
-                WeekSummaries.Clear();
+                // Update existing WeekSummary items in-place so UI bars for unaffected weeks do not re-render.
+                var existing = WeekSummaries.ToDictionary(w => w.WeekNumber);
+                var seen = new HashSet<int>();
                 foreach (var g in groups)
                 {
                     var progress = Math.Min(g.Sum / 40.0, 1.0);
                     var isFull = progress >= 1.0;
-                    var ws = new WeekSummary
+                    if (existing.TryGetValue(g.Week, out var ws))
                     {
-                        WeekNumber = g.Week,
-                        SumHours = g.Sum,
-                        Label = $"W{g.Week}: {g.Sum.ToString("N1", CultureInfo.CurrentCulture)}h",
-                        TextColor = Colors.Gray,
-                        Progress = progress,
-                        ProgressColor = isFull ? Colors.Green : Color.FromArgb("#ac99ea")
-                    };
-                    WeekSummaries.Add(ws);
+                        ws.SumHours = g.Sum;
+                        ws.Label = $"W{g.Week}: {g.Sum.ToString("N1", CultureInfo.CurrentCulture)}h";
+                        ws.Progress = progress;
+                        ws.ProgressColor = isFull ? Colors.Green : Color.FromArgb("#ac99ea");
+                        // leave TextColor/WeekNumber as-is
+                    }
+                    else
+                    {
+                        ws = new WeekSummary
+                        {
+                            WeekNumber = g.Week,
+                            SumHours = g.Sum,
+                            Label = $"W{g.Week}: {g.Sum.ToString("N1", CultureInfo.CurrentCulture)}h",
+                            TextColor = Colors.Gray,
+                            Progress = progress,
+                            ProgressColor = isFull ? Colors.Green : Color.FromArgb("#ac99ea")
+                        };
+                        WeekSummaries.Add(ws);
+                    }
+                    seen.Add(g.Week);
                 }
-                OnPropertyChanged(nameof(WeekSummaries));
+
+                // Remove any WeekSummaries that are no longer present
+                for (int i = WeekSummaries.Count - 1; i >= 0; i--)
+                {
+                    if (!seen.Contains(WeekSummaries[i].WeekNumber))
+                        WeekSummaries.RemoveAt(i);
+                }
             }
             catch
             {
@@ -344,15 +364,22 @@ namespace DocumentationOfWorkingHours.ViewModels
         public string SelectedHoursDisplay => Math.Abs(SelectedHours) < 0.0001 ? string.Empty : SelectedHours.ToString("N1", CultureInfo.CurrentCulture) + "h";
     }
 
-    public class WeekSummary
+    public class WeekSummary : BindableObject
     {
-        public int WeekNumber { get; set; }
-        public double SumHours { get; set; }
-        public string Label { get; set; } = string.Empty;
-        public Color TextColor { get; set; } = Colors.Gray;
+        int _weekNumber;
+        double _sumHours;
+        string _label = string.Empty;
+        Color _textColor = Colors.Gray;
+        double _progress;
+        Color _progressColor = Colors.Green;
+
+        public int WeekNumber { get => _weekNumber; set { _weekNumber = value; OnPropertyChanged(); } }
+        public double SumHours { get => _sumHours; set { _sumHours = value; OnPropertyChanged(); } }
+        public string Label { get => _label; set { _label = value; OnPropertyChanged(); } }
+        public Color TextColor { get => _textColor; set { _textColor = value; OnPropertyChanged(); } }
         // Progress 0..1 where 1 means 40h or more
-        public double Progress { get; set; }
-        public Color ProgressColor { get; set; } = Colors.Green;
+        public double Progress { get => _progress; set { _progress = value; OnPropertyChanged(); } }
+        public Color ProgressColor { get => _progressColor; set { _progressColor = value; OnPropertyChanged(); } }
     }
 
 }

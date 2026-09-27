@@ -291,6 +291,10 @@ namespace DocumentationOfWorkingHours.ViewModels
                     .ToList();
                 WeekSumsText = string.Join(" / ", groups.Select(g => $"W{g.Week}: {g.Sum.ToString("N1", CultureInfo.CurrentCulture)}h"));
 
+                // Update total hours for the displayed month
+                TotalHours = groups.Sum(g => g.Sum);
+                OnPropertyChanged(nameof(TotalHoursDisplay));
+
                 // Populate WeekSummaries collection so UI can color weeks >= 40h
                 // Update existing WeekSummary items in-place so UI bars for unaffected weeks do not re-render.
                 var existing = WeekSummaries.ToDictionary(w => w.WeekNumber);
@@ -362,6 +366,10 @@ namespace DocumentationOfWorkingHours.ViewModels
         }
 
         public string SelectedHoursDisplay => Math.Abs(SelectedHours) < 0.0001 ? string.Empty : SelectedHours.ToString("N1", CultureInfo.CurrentCulture) + "h";
+
+        double _totalHours = 0.0;
+        public double TotalHours { get => _totalHours; set { _totalHours = value; OnPropertyChanged(); } }
+        public string TotalHoursDisplay => TotalHours.ToString("N1", CultureInfo.CurrentCulture) + "h";
     }
 
     public class WeekSummary : BindableObject

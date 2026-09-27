@@ -100,6 +100,9 @@
                 </BindableLayout.ItemTemplate>
             </StackLayout>
 
+            <!-- Total hours display on the right side of the legend -->
+            <Label Grid.Column="0" HorizontalOptions="End" VerticalOptions="Center" Margin="8,0" TextColor="{StaticResource ShellTitleColor}" Text="{Binding TotalHours, StringFormat='Total sum: {0:N1} h'}" />
+
             <!-- Hours controls moved to the right column. Use Opacity trigger to preserve layout space on Android/Windows. -->
             <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center" HorizontalOptions="End">
                 <HorizontalStackLayout.Triggers>

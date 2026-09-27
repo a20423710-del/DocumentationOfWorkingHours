@@ -8,6 +8,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.ApplicationModel;
+using System.Timers;
 using DocumentationOfWorkingHours.Services;
 
 namespace DocumentationOfWorkingHours.ViewModels
@@ -107,6 +109,15 @@ namespace DocumentationOfWorkingHours.ViewModels
         public ICommand NextMonthCommand { get; }
         public ICommand SaveCommand { get; }
         public ICommand SelectDayCommand { get; }
+        // Simple timer UI bindings and commands
+        public ICommand TimerStartCommand { get; private set; }
+        public ICommand TimerStopCommand { get; private set; }
+        public ICommand TimerResetCommand { get; private set; }
+
+        string _timerDisplay = "00:00:00";
+        public string TimerDisplay { get => _timerDisplay; set { _timerDisplay = value; OnPropertyChanged(); } }
+        private TimeSpan _timerElapsed = TimeSpan.Zero;
+        private System.Timers.Timer? _timer;
 
         public CalendarPageViewModel()
         {
@@ -115,7 +126,43 @@ namespace DocumentationOfWorkingHours.ViewModels
             NextMonthCommand = new Command(async () => await ChangeMonthAsync(1));
             SaveCommand = new Command(async () => await SaveNoteAsync());
             SelectDayCommand = new Command<DayDisplay>(d => OnSelectDay(d));
+            TimerStartCommand = new Command(() => StartTimer());
+            TimerStopCommand = new Command(() => StopTimer());
+            TimerResetCommand = new Command(() => ResetTimer());
             _ = LoadMonthAsync(_current);
+        }
+
+        void StartTimer()
+        {
+            if (_timer == null)
+            {
+                _timer = new System.Timers.Timer(1000) { AutoReset = true };
+                _timer.Elapsed += (s, e) =>
+                {
+                    _timerElapsed = _timerElapsed.Add(TimeSpan.FromSeconds(1));
+                    try
+                    {
+                        MainThread.BeginInvokeOnMainThread(() => TimerDisplay = _timerElapsed.ToString(@"hh\:mm\:ss"));
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                };
+            }
+            _timer?.Start();
+        }
+
+        void StopTimer()
+        {
+            _timer?.Stop();
+        }
+
+        void ResetTimer()
+        {
+            StopTimer();
+            _timerElapsed = TimeSpan.Zero;
+            TimerDisplay = _timerElapsed.ToString(@"hh\:mm\:ss");
         }
 
         void OnSelectDay(DayDisplay? d)

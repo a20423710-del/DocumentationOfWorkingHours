@@ -82,9 +82,11 @@
 
         <!-- Eingabebereich und Wochen-Summen in einer Zeile -->
         <!-- Reserve fixed space for the hours controls column so showing/hiding it does not shift the week labels -->
-        <Grid Padding="6" ColumnDefinitions="*,200" VerticalOptions="Center">
-            <!-- Week sums as individual items so we can color weeks >= 40h -->
-            <StackLayout Grid.Column="0" Orientation="Horizontal" Spacing="8" HorizontalOptions="Start" VerticalOptions="Center" BindableLayout.ItemsSource="{Binding WeekSummaries}">
+
+        <!-- All bottom controls in one single horizontal line -->
+        <HorizontalStackLayout Spacing="12" Padding="6" VerticalOptions="End" HorizontalOptions="Fill" BackgroundColor="Transparent">
+            <!-- Week summaries (left) -->
+            <StackLayout Orientation="Horizontal" Spacing="8" HorizontalOptions="StartAndExpand" VerticalOptions="Center" BindableLayout.ItemsSource="{Binding WeekSummaries}">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate>
                         <StackLayout Orientation="Vertical" Spacing="2" Margin="0">
@@ -100,27 +102,29 @@
                 </BindableLayout.ItemTemplate>
             </StackLayout>
 
-            <!-- Total hours display on the right side of the legend -->
-            <Label Grid.Column="0" HorizontalOptions="End" VerticalOptions="Center" Margin="8,0" TextColor="{StaticResource ShellTitleColor}" Text="{Binding TotalHours, StringFormat='Total sum: {0:N1} h'}" />
+            <!-- Total hours -->
+            <Label Text="{Binding TotalHours, StringFormat='Total sum: {0:N1} h'}" TextColor="{StaticResource ShellTitleColor}" VerticalOptions="Center" HorizontalOptions="Center" />
 
-            <!-- Hours controls moved to the right column. Use Opacity trigger to preserve layout space on Android/Windows. -->
-            <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center" HorizontalOptions="End">
-                <HorizontalStackLayout.Triggers>
-                    <DataTrigger TargetType="HorizontalStackLayout" Binding="{Binding IsEditing}" Value="False">
-                        <Setter Property="Opacity" Value="0" />
-                        <Setter Property="InputTransparent" Value="True" />
-                        <Setter Property="IsEnabled" Value="False" />
-                    </DataTrigger>
-                </HorizontalStackLayout.Triggers>
+            <!-- Timer (right) - value on top of the buttons (moved left) -->
+            <VerticalStackLayout Spacing="2" VerticalOptions="Center" HorizontalOptions="Center">
+                <Label Text="{Binding TimerDisplay}" FontAttributes="Bold" HorizontalOptions="Center" />
+                <HorizontalStackLayout Spacing="8" HorizontalOptions="Center">
+                    <Button Text="Start" Command="{Binding TimerStartCommand}" WidthRequest="64" HeightRequest="44" />
+                    <Button Text="Stop" Command="{Binding TimerStopCommand}" WidthRequest="64" HeightRequest="44" />
+                    <Button Text="Reset" Command="{Binding TimerResetCommand}" WidthRequest="64" HeightRequest="44" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
 
-                <Label Text="{Binding SelectedHoursDisplay}" VerticalOptions="Center" HorizontalOptions="Center" />
-
-                <Button Text="-" WidthRequest="44" HeightRequest="44" Clicked="OnMinusClicked" />
-                <Button Text="+" WidthRequest="44" HeightRequest="44" Clicked="OnPlusClicked" />
-
-                <Button Text="Save" Command="{Binding SaveCommand}" IsEnabled="{Binding IsEditing}" />
-            </HorizontalStackLayout>
-        </Grid>
+            <!-- Selected hours and edit controls: value shown above the buttons (moved right) -->
+            <VerticalStackLayout Spacing="2" VerticalOptions="Center" HorizontalOptions="EndAndExpand">
+                <Label Text="{Binding SelectedHoursDisplay}" HorizontalOptions="Center" />
+                <HorizontalStackLayout Spacing="6" VerticalOptions="Center" HorizontalOptions="Center">
+                    <Button Text="-" WidthRequest="44" HeightRequest="44" Clicked="OnMinusClicked" />
+                    <Button Text="+" WidthRequest="44" HeightRequest="44" Clicked="OnPlusClicked" />
+                    <Button Text="Save" Command="{Binding SaveCommand}" IsEnabled="{Binding IsEditing}" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+        </HorizontalStackLayout>
 
     </VerticalStackLayout>
 </ContentPage>

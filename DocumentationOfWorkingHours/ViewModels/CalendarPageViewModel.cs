@@ -76,8 +76,9 @@ namespace DocumentationOfWorkingHours.ViewModels
                 _selectedDay = value;
                 OnPropertyChanged();
 
-                // Notify SelectedHours binding when selection changes
+                // Notify SelectedHours binding and its display when selection changes
                 OnPropertyChanged(nameof(SelectedHours));
+                OnPropertyChanged(nameof(SelectedHoursDisplay));
 
                 // Wenn vorher keine Auswahl war oder ein anderer Tag gewählt wurde -> Editing an, sonst aus
                 IsEditing = wasNull || !sameDate;

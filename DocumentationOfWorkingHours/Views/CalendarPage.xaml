@@ -103,7 +103,9 @@
             </StackLayout>
 
             <!-- Total hours -->
-            <Label Text="{Binding TotalHours, StringFormat='Total sum: {0:N1} h'}" TextColor="{StaticResource ShellTitleColor}" VerticalOptions="Center" HorizontalOptions="Center" />
+            <Label Text="{Binding TotalHours, StringFormat='Total hours: {0:N1} h'}"
+                   TextColor="{AppThemeBinding Light={StaticResource ShellTitleColor}, Dark={StaticResource PrimaryDark}}"
+                   VerticalOptions="Center" HorizontalOptions="Center" />
 
             <!-- Timer (right) - value on top of the buttons (moved left) -->
             <VerticalStackLayout Spacing="2" VerticalOptions="Center" HorizontalOptions="Center">

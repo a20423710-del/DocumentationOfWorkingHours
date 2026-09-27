@@ -288,7 +288,7 @@ namespace DocumentationOfWorkingHours.ViewModels
                     })
                     .OrderBy(g => g.Week)
                     .ToList();
-                WeekSumsText = string.Join(" / ", groups.Select(g => $"W{g.Week}: {g.Sum}h"));
+                WeekSumsText = string.Join(" / ", groups.Select(g => $"W{g.Week}: {g.Sum.ToString("N1", CultureInfo.CurrentCulture)}h"));
 
                 // Populate WeekSummaries collection so UI can color weeks >= 40h
                 WeekSummaries.Clear();
@@ -300,7 +300,7 @@ namespace DocumentationOfWorkingHours.ViewModels
                     {
                         WeekNumber = g.Week,
                         SumHours = g.Sum,
-                        Label = $"W{g.Week}: {g.Sum}h",
+                        Label = $"W{g.Week}: {g.Sum.ToString("N1", CultureInfo.CurrentCulture)}h",
                         TextColor = Colors.Gray,
                         Progress = progress,
                         ProgressColor = isFull ? Colors.Green : Color.FromArgb("#ac99ea")

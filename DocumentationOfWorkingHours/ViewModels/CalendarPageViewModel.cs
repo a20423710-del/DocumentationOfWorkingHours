@@ -118,6 +118,7 @@ namespace DocumentationOfWorkingHours.ViewModels
         public string TimerDisplay { get => _timerDisplay; set { _timerDisplay = value; OnPropertyChanged(); } }
         private TimeSpan _timerElapsed = TimeSpan.Zero;
         private System.Timers.Timer? _timer;
+        bool _timerIsRunning = false;
 
         public CalendarPageViewModel()
         {
@@ -131,6 +132,10 @@ namespace DocumentationOfWorkingHours.ViewModels
             TimerResetCommand = new Command(() => ResetTimer());
             _ = LoadMonthAsync(_current);
         }
+
+        public bool TimerIsRunning { get => _timerIsRunning; private set { _timerIsRunning = value; OnPropertyChanged(); OnPropertyChanged(nameof(TimerStartButtonText)); } }
+
+        public string TimerStartButtonText => !TimerIsRunning && _timerElapsed > TimeSpan.Zero ? "Continue" : "Start";
 
         void StartTimer()
         {
@@ -151,11 +156,13 @@ namespace DocumentationOfWorkingHours.ViewModels
                 };
             }
             _timer?.Start();
+            TimerIsRunning = true;
         }
 
         void StopTimer()
         {
             _timer?.Stop();
+            TimerIsRunning = false;
         }
 
         void ResetTimer()
@@ -163,6 +170,7 @@ namespace DocumentationOfWorkingHours.ViewModels
             StopTimer();
             _timerElapsed = TimeSpan.Zero;
             TimerDisplay = _timerElapsed.ToString(@"hh\:mm\:ss");
+            OnPropertyChanged(nameof(TimerStartButtonText));
         }
 
         void OnSelectDay(DayDisplay? d)

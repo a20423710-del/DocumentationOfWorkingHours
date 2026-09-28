@@ -111,7 +111,7 @@
             <VerticalStackLayout Spacing="2" VerticalOptions="Center" HorizontalOptions="Center">
                 <Label Text="{Binding TimerDisplay}" FontAttributes="Bold" HorizontalOptions="Center" />
                 <HorizontalStackLayout Spacing="8" HorizontalOptions="Center">
-                    <Button Text="Start" Command="{Binding TimerStartCommand}" WidthRequest="64" HeightRequest="44" />
+                    <Button Text="{Binding TimerStartButtonText}" Command="{Binding TimerStartCommand}" WidthRequest="96" HeightRequest="44" />
                     <Button Text="Stop" Command="{Binding TimerStopCommand}" WidthRequest="64" HeightRequest="44" />
                     <Button Text="Reset" Command="{Binding TimerResetCommand}" WidthRequest="64" HeightRequest="44" />
                 </HorizontalStackLayout>

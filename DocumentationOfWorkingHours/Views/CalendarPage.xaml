@@ -123,7 +123,7 @@
                 <HorizontalStackLayout Spacing="6" VerticalOptions="Center" HorizontalOptions="Center">
                     <Button Text="-" WidthRequest="44" HeightRequest="44" Clicked="OnMinusClicked" />
                     <Button Text="+" WidthRequest="44" HeightRequest="44" Clicked="OnPlusClicked" />
-                    <Button Text="Save" Command="{Binding SaveCommand}" IsEnabled="{Binding IsEditing}" />
+                    <Button Text="Save" Command="{Binding SaveCommand}" IsEnabled="{Binding IsEditing}" HeightRequest="44" />
                 </HorizontalStackLayout>
             </VerticalStackLayout>
         </HorizontalStackLayout>

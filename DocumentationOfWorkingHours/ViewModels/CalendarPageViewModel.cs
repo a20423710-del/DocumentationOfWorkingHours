@@ -393,14 +393,17 @@ namespace DocumentationOfWorkingHours.ViewModels
                 OnPropertyChanged(nameof(TotalHoursDisplay));
 
                 // Populate WeekSummaries collection so UI can color weeks >= 40h
+                // Ensure WeekSummaries are always ordered by WeekNumber.
                 var existing = WeekSummaries.ToDictionary(w => w.WeekNumber);
-                var seen = new HashSet<int>();
+                var desired = new List<WeekSummary>();
+
                 foreach (var g in groups)
                 {
                     var progress = Math.Min(g.Sum / 40.0, 1.0);
                     var isFull = progress >= 1.0;
                     if (existing.TryGetValue(g.Week, out var ws))
                     {
+                        // update in-place
                         ws.SumHours = g.Sum;
                         ws.Label = $"W{g.Week}: {g.Sum.ToString("N1", CultureInfo.CurrentCulture)}h";
                         ws.Progress = progress;
@@ -417,16 +420,14 @@ namespace DocumentationOfWorkingHours.ViewModels
                             Progress = progress,
                             ProgressColor = isFull ? Colors.Green : Color.FromArgb("#ac99ea")
                         };
-                        WeekSummaries.Add(ws);
                     }
-                    seen.Add(g.Week);
+                    desired.Add(ws);
                 }
 
-                for (int i = WeekSummaries.Count - 1; i >= 0; i--)
-                {
-                    if (!seen.Contains(WeekSummaries[i].WeekNumber))
-                        WeekSummaries.RemoveAt(i);
-                }
+                // Replace WeekSummaries contents with the desired (sorted) list.
+                WeekSummaries.Clear();
+                foreach (var ws in desired)
+                    WeekSummaries.Add(ws);
             }
             catch
             {

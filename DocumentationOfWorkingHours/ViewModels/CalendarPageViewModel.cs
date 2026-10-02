@@ -323,20 +323,61 @@ namespace DocumentationOfWorkingHours.ViewModels
                 var rule = CalendarWeekRule.FirstFourDayWeek;
                 var firstDay = DayOfWeek.Monday;
 
-                var groups = Days
-                    .Where(d => d.Date != null)
-                    .GroupBy(d => cal.GetWeekOfYear(d.Date!.Value, rule, firstDay))
+                // Determine the full date range shown in the calendar grid (including leading/trailing placeholders)
+                var firstOfMonth = new DateTime(_current.Year, _current.Month, 1);
+                var leadPlaceholders = ((int)firstOfMonth.DayOfWeek + 6) % 7; // 0 = Monday
+                var startDisplay = firstOfMonth.AddDays(-leadPlaceholders).Date;
+
+                var lastOfMonth = new DateTime(_current.Year, _current.Month, DateTime.DaysInMonth(_current.Year, _current.Month));
+                var tailPlaceholders = ((int)lastOfMonth.DayOfWeek + 6) % 7;
+                var endDisplay = lastOfMonth.AddDays(6 - tailPlaceholders).Date;
+
+                // Load notes from persistent store for the displayed range so weeks that span months include
+                // notes from adjacent months. Build a date->note map.
+                var notesByDate = new Dictionary<DateTime, string?>();
+                try
+                {
+                    var path = CalendarStore.GetDefaultPath();
+                    var store = CalendarStore.LoadAsync(path).GetAwaiter().GetResult();
+                    if (store != null)
+                    {
+                        foreach (var m in store.Months)
+                        {
+                            foreach (var w in m.Weeks)
+                            {
+                                foreach (var day in w.Days)
+                                {
+                                    var dDate = day.Date.Date;
+                                    if (dDate >= startDisplay && dDate <= endDisplay)
+                                    {
+                                        notesByDate[dDate] = day.Notes;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                catch { }
+
+                // Override with current in-memory Days (unsaved edits should take precedence)
+                foreach (var d in Days.Where(d => d.Date != null))
+                {
+                    notesByDate[d.Date!.Value.Date] = d.Note;
+                }
+
+                // Group by calendar week number and sum parsed hours
+                var groups = notesByDate
+                    .GroupBy(kv => cal.GetWeekOfYear(kv.Key, rule, firstDay))
                     .Select(g => new
                     {
                         Week = g.Key,
-                        Sum = g.Sum(x =>
+                        Sum = g.Sum(kv =>
                         {
-                            if (string.IsNullOrWhiteSpace(x.Note)) return 0.0;
-                            // try parse note as a numeric hours value
-                            if (double.TryParse(x.Note, System.Globalization.NumberStyles.Float, CultureInfo.CurrentCulture, out var v))
+                            var s = kv.Value;
+                            if (string.IsNullOrWhiteSpace(s)) return 0.0;
+                            if (double.TryParse(s, System.Globalization.NumberStyles.Float, CultureInfo.CurrentCulture, out var v))
                                 return v;
-                            // fallback: try to extract leading number token
-                            var firstToken = x.Note.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+                            var firstToken = s.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
                             if (firstToken != null && double.TryParse(firstToken, System.Globalization.NumberStyles.Float, CultureInfo.CurrentCulture, out var v2))
                                 return v2;
                             return 0.0;
@@ -344,14 +385,14 @@ namespace DocumentationOfWorkingHours.ViewModels
                     })
                     .OrderBy(g => g.Week)
                     .ToList();
+
                 WeekSumsText = string.Join(" / ", groups.Select(g => $"W{g.Week}: {g.Sum.ToString("N1", CultureInfo.CurrentCulture)}h"));
 
-                // Update total hours for the displayed month
+                // Update total hours for the displayed month (sum of all weeks shown)
                 TotalHours = groups.Sum(g => g.Sum);
                 OnPropertyChanged(nameof(TotalHoursDisplay));
 
                 // Populate WeekSummaries collection so UI can color weeks >= 40h
-                // Update existing WeekSummary items in-place so UI bars for unaffected weeks do not re-render.
                 var existing = WeekSummaries.ToDictionary(w => w.WeekNumber);
                 var seen = new HashSet<int>();
                 foreach (var g in groups)
@@ -364,7 +405,6 @@ namespace DocumentationOfWorkingHours.ViewModels
                         ws.Label = $"W{g.Week}: {g.Sum.ToString("N1", CultureInfo.CurrentCulture)}h";
                         ws.Progress = progress;
                         ws.ProgressColor = isFull ? Colors.Green : Color.FromArgb("#ac99ea");
-                        // leave TextColor/WeekNumber as-is
                     }
                     else
                     {
@@ -382,7 +422,6 @@ namespace DocumentationOfWorkingHours.ViewModels
                     seen.Add(g.Week);
                 }
 
-                // Remove any WeekSummaries that are no longer present
                 for (int i = WeekSummaries.Count - 1; i >= 0; i--)
                 {
                     if (!seen.Contains(WeekSummaries[i].WeekNumber))

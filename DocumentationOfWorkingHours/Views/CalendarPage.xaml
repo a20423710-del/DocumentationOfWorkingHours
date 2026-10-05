@@ -20,7 +20,7 @@
     <VerticalStackLayout Spacing="6" Padding="8">
         <Grid ColumnDefinitions="Auto,*,Auto" VerticalOptions="Center">
             <Button Text="◀" Command="{Binding PrevMonthCommand}" />
-            <Label Grid.Column="1" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" Text="{Binding MonthTitle}" />
+            <Label Grid.Column="1" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" FontSize="22" Text="{Binding MonthTitle}" />
             <Button Grid.Column="2" Text="▶" Command="{Binding NextMonthCommand}" />
         </Grid>
 
@@ -52,10 +52,28 @@
                                 </Grid.RowDefinitions>
 
                                 <!-- Day number centered -->
-                                <Label Grid.Row="0" Text="{Binding DayNumber}" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" FontSize="16" />
+                                <Label Grid.Row="0" Text="{Binding DayNumber}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" FontSize="16">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsOtherMonth}" Value="True">
+                                            <Setter Property="TextColor" Value="Gray" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsOtherMonth}" Value="False">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
 
-                                <!-- Note at bottom-left -->
-                                <Label Grid.Row="1" Text="{Binding DisplayNote}" FontSize="11" VerticalOptions="End" HorizontalOptions="Start" LineBreakMode="TailTruncation" />
+                                <!-- Note at bottom-left (worked hours) -->
+                                <Label Grid.Row="1" Text="{Binding DisplayNote}" FontSize="11" VerticalOptions="End" HorizontalOptions="Start" LineBreakMode="TailTruncation">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsOtherMonth}" Value="True">
+                                            <Setter Property="TextColor" Value="Gray" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsOtherMonth}" Value="False">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
                             </Grid>
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding Source={x:Reference page}, Path=BindingContext.SelectDayCommand}" CommandParameter="{Binding .}" />
@@ -63,6 +81,12 @@
                             <Border.Triggers>
                                 <DataTrigger TargetType="Border" Binding="{Binding IsPlaceholder}" Value="True">
                                     <Setter Property="Style" Value="{StaticResource PlaceholderBorder}" />
+                                    <Setter Property="IsEnabled" Value="False" />
+                                    <Setter Property="InputTransparent" Value="True" />
+                                </DataTrigger>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsOtherMonth}" Value="True">
+                                    <!-- Visual style for other-month cells: show but de-emphasize and disable interaction -->
+                                    <Setter Property="Opacity" Value="1" />
                                     <Setter Property="IsEnabled" Value="False" />
                                     <Setter Property="InputTransparent" Value="True" />
                                 </DataTrigger>

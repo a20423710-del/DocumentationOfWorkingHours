@@ -1,7 +1,7 @@
 <ContentPage x:Name="page" xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="DocumentationOfWorkingHours.Views.CalendarPage"
-             Title="Working Hours">
+              Title="Arbeitsstunden">
 
     <ContentPage.Resources>
         <!-- DayTextColor removed; use ShellTitleColor resource directly in TextColor bindings -->
@@ -127,7 +127,7 @@
             </StackLayout>
 
             <!-- Total hours -->
-            <Label Text="{Binding TotalHours, StringFormat='Total hours: {0:N1} h'}"
+            <Label Text="{Binding TotalHours, StringFormat='Summe Stunden: {0:N1} St.'}"
                    TextColor="{AppThemeBinding Light={StaticResource ShellTitleColor}, Dark={StaticResource PrimaryDark}}"
                    VerticalOptions="Center" HorizontalOptions="Center" />
 

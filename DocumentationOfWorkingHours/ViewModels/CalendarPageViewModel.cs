@@ -446,7 +446,7 @@ namespace DocumentationOfWorkingHours.ViewModels
                     .OrderBy(g => g.Week)
                     .ToList();
 
-                WeekSumsText = string.Join(" / ", groups.Select(g => $"W{g.Week}: {g.Sum.ToString("N1", CultureInfo.CurrentCulture)}h"));
+                WeekSumsText = string.Join(" / ", groups.Select(g => $"W{g.Week}: {g.Sum.ToString("N1", CultureInfo.CurrentCulture)} St."));
 
                 // Update total hours for the displayed month (sum of all weeks shown)
                 TotalHours = groups.Sum(g => g.Sum);
@@ -467,7 +467,7 @@ namespace DocumentationOfWorkingHours.ViewModels
                     {
                         // update in-place
                         existingWs.SumHours = g.Sum;
-                        existingWs.Label = $"W{g.Week}: {g.Sum.ToString("N1", CultureInfo.CurrentCulture)}h";
+                        existingWs.Label = $"W{g.Week}: {g.Sum.ToString("N1", CultureInfo.CurrentCulture)} St.";
                         existingWs.Progress = progress;
                         existingWs.ProgressColor = isFull ? Colors.Green : Color.FromArgb("#ac99ea");
                         ws = existingWs;
@@ -478,7 +478,7 @@ namespace DocumentationOfWorkingHours.ViewModels
                         {
                             WeekNumber = g.Week,
                             SumHours = g.Sum,
-                            Label = $"W{g.Week}: {g.Sum.ToString("N1", CultureInfo.CurrentCulture)}h",
+                            Label = $"W{g.Week}: {g.Sum.ToString("N1", CultureInfo.CurrentCulture)} St.",
                             TextColor = Colors.Gray,
                             Progress = progress,
                             ProgressColor = isFull ? Colors.Green : Color.FromArgb("#ac99ea")
@@ -541,7 +541,7 @@ namespace DocumentationOfWorkingHours.ViewModels
 
         double _totalHours = 0.0;
         public double TotalHours { get => _totalHours; set { _totalHours = value; OnPropertyChanged(); } }
-        public string TotalHoursDisplay => TotalHours.ToString("N1", CultureInfo.CurrentCulture) + "h";
+        public string TotalHoursDisplay => TotalHours.ToString("N1", CultureInfo.CurrentCulture) + " St.";
     }
 
     public class WeekSummary : BindableObject

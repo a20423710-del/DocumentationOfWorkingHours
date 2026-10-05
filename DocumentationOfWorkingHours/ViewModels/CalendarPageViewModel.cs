@@ -392,22 +392,25 @@ namespace DocumentationOfWorkingHours.ViewModels
                 TotalHours = groups.Sum(g => g.Sum);
                 OnPropertyChanged(nameof(TotalHoursDisplay));
 
-                // Populate WeekSummaries collection so UI can color weeks >= 40h
-                // Ensure WeekSummaries are always ordered by WeekNumber.
+                // Populate WeekSummaries collection so UI can color weeks >= 25h
+                // Update existing items in-place and move/insert to keep object identity.
                 var existing = WeekSummaries.ToDictionary(w => w.WeekNumber);
-                var desired = new List<WeekSummary>();
+                var index = 0;
+                var seenWeeks = new HashSet<int>();
 
                 foreach (var g in groups)
                 {
-                    var progress = Math.Min(g.Sum / 40.0, 1.0);
+                    var progress = Math.Min(g.Sum / 25.0, 1.0);
                     var isFull = progress >= 1.0;
-                    if (existing.TryGetValue(g.Week, out var ws))
+                    WeekSummary ws;
+                    if (existing.TryGetValue(g.Week, out var existingWs))
                     {
                         // update in-place
-                        ws.SumHours = g.Sum;
-                        ws.Label = $"W{g.Week}: {g.Sum.ToString("N1", CultureInfo.CurrentCulture)}h";
-                        ws.Progress = progress;
-                        ws.ProgressColor = isFull ? Colors.Green : Color.FromArgb("#ac99ea");
+                        existingWs.SumHours = g.Sum;
+                        existingWs.Label = $"W{g.Week}: {g.Sum.ToString("N1", CultureInfo.CurrentCulture)}h";
+                        existingWs.Progress = progress;
+                        existingWs.ProgressColor = isFull ? Colors.Green : Color.FromArgb("#ac99ea");
+                        ws = existingWs;
                     }
                     else
                     {
@@ -421,13 +424,27 @@ namespace DocumentationOfWorkingHours.ViewModels
                             ProgressColor = isFull ? Colors.Green : Color.FromArgb("#ac99ea")
                         };
                     }
-                    desired.Add(ws);
+
+                    var currentIndex = WeekSummaries.IndexOf(ws);
+                    if (currentIndex == -1)
+                    {
+                        WeekSummaries.Insert(index, ws);
+                    }
+                    else if (currentIndex != index)
+                    {
+                        WeekSummaries.Move(currentIndex, index);
+                    }
+
+                    seenWeeks.Add(ws.WeekNumber);
+                    index++;
                 }
 
-                // Replace WeekSummaries contents with the desired (sorted) list.
-                WeekSummaries.Clear();
-                foreach (var ws in desired)
-                    WeekSummaries.Add(ws);
+                // Remove stale week summaries that are no longer present.
+                for (int i = WeekSummaries.Count - 1; i >= 0; i--)
+                {
+                    if (!seenWeeks.Contains(WeekSummaries[i].WeekNumber))
+                        WeekSummaries.RemoveAt(i);
+                }
             }
             catch
             {
@@ -480,7 +497,7 @@ namespace DocumentationOfWorkingHours.ViewModels
         public double SumHours { get => _sumHours; set { _sumHours = value; OnPropertyChanged(); } }
         public string Label { get => _label; set { _label = value; OnPropertyChanged(); } }
         public Color TextColor { get => _textColor; set { _textColor = value; OnPropertyChanged(); } }
-        // Progress 0..1 where 1 means 40h or more
+        // Progress 0..1 where 1 means 25h or more
         public double Progress { get => _progress; set { _progress = value; OnPropertyChanged(); } }
         public Color ProgressColor { get => _progressColor; set { _progressColor = value; OnPropertyChanged(); } }
     }

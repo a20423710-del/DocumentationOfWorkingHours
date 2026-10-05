@@ -20,11 +20,14 @@ namespace DocumentationOfWorkingHours.ViewModels
         string? _note;
         DateTime? _date;
         bool _isToday;
+        bool _isOtherMonth;
 
         public int? DayNumber { get => _dayNumber; set { _dayNumber = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsPlaceholder)); } }
         public string? Note { get => _note; set { _note = value; OnPropertyChanged(); OnPropertyChanged(nameof(DisplayNote)); } }
         public bool IsPlaceholder => DayNumber == null;
         public bool IsToday { get => _isToday; set { _isToday = value; OnPropertyChanged(); } }
+        // True when this cell belongs to an adjacent month (leading/trailing days)
+        public bool IsOtherMonth { get => _isOtherMonth; set { _isOtherMonth = value; OnPropertyChanged(); } }
         public DateTime? Date { get => _date; set { _date = value; OnPropertyChanged(); } }
 
         // Return an empty string when note is null/empty or numeric zero
@@ -62,9 +65,9 @@ namespace DocumentationOfWorkingHours.ViewModels
                     return;
                 }
 
-                // If the selected item is a placeholder (no day number), do not allow editing
-                // Revert the selection so placeholders are not selectable in the UI.
-                if (value.DayNumber == null)
+                // If the selected item belongs to an adjacent month, do not allow editing
+                // Revert the selection so placeholder-adjacent-month cells are not selectable in the UI.
+                if (value.IsOtherMonth)
                 {
                     // Do not set _selectedDay to the placeholder. Notify binding so UI resets to previous selection (or clears selection).
                     OnPropertyChanged(nameof(SelectedDay));
@@ -199,9 +202,36 @@ namespace DocumentationOfWorkingHours.ViewModels
             var first = new DateTime(month.Year, month.Month, 1);
             // In many cultures week starts on Monday; adjust so Monday=1..Sunday=7
             var dayOfWeek = ((int)first.DayOfWeek + 6) % 7; // 0 = Monday
+            // Leading placeholders: show the actual day number from the previous month and mark as IsOtherMonth
             for (int i = 0; i < dayOfWeek; i++)
             {
-                Days.Add(new DayDisplay { DayNumber = null });
+                var placeholderDate = first.AddDays(i - dayOfWeek);
+                string? note = null;
+                try
+                {
+                    var path = CalendarStore.GetDefaultPath();
+                    var cal = CalendarStore.LoadAsync(path).GetAwaiter().GetResult();
+                    if (cal != null)
+                    {
+                        foreach (var m in cal.Months)
+                        {
+                            foreach (var w in m.Weeks)
+                            {
+                                foreach (var day in w.Days)
+                                {
+                                    if (day.Date.Date == placeholderDate.Date)
+                                    {
+                                        note = day.Notes;
+                                        goto foundLead;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                catch { }
+                foundLead:
+                Days.Add(new DayDisplay { DayNumber = placeholderDate.Day, Date = placeholderDate, Note = note, IsToday = placeholderDate.Date == DateTime.Today, IsOtherMonth = true });
             }
 
             var daysInMonth = DateTime.DaysInMonth(month.Year, month.Month);
@@ -237,12 +267,42 @@ namespace DocumentationOfWorkingHours.ViewModels
                 }
                 catch { }
                 found:
-                Days.Add(new DayDisplay { DayNumber = d, Date = dt, Note = note, IsToday = dt.Date == DateTime.Today });
+                Days.Add(new DayDisplay { DayNumber = d, Date = dt, Note = note, IsToday = dt.Date == DateTime.Today, IsOtherMonth = false });
             }
 
             // Fill trailing placeholders to complete the last week
+            var last = new DateTime(month.Year, month.Month, daysInMonth);
+            var trailingDay = last.AddDays(1);
             while (Days.Count % 7 != 0)
-                Days.Add(new DayDisplay { DayNumber = null });
+            {
+                string? note = null;
+                try
+                {
+                    var path = CalendarStore.GetDefaultPath();
+                    var cal = CalendarStore.LoadAsync(path).GetAwaiter().GetResult();
+                    if (cal != null)
+                    {
+                        foreach (var m in cal.Months)
+                        {
+                            foreach (var w in m.Weeks)
+                            {
+                                foreach (var day in w.Days)
+                                {
+                                    if (day.Date.Date == trailingDay.Date)
+                                    {
+                                        note = day.Notes;
+                                        goto foundTrail;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                catch { }
+                foundTrail:
+                Days.Add(new DayDisplay { DayNumber = trailingDay.Day, Date = trailingDay, Note = note, IsToday = trailingDay.Date == DateTime.Today, IsOtherMonth = true });
+                trailingDay = trailingDay.AddDays(1);
+            }
 
             // Recalculate week sums for the loaded month
             RecalcWeekSums();
